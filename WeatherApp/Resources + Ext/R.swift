@@ -9,8 +9,10 @@ import UIKit
 
 enum R {
     enum Colors {
-        static let background = UIColor(hexString: "#e2eaf2")
-        static let darkBg = UIColor(hexString: "#2f3543")
+        
+        static var background = UIColor(hexString: "#e2eaf2")
+        static var darkBg = UIColor(hexString: "#2f3543")
+        
     }
     
     enum Fonts {
@@ -35,3 +37,4 @@ enum R {
         }
     }
 }
+

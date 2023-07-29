@@ -23,7 +23,8 @@ final class StackView: UIView {
         label.text = "Wind"
         label.font = R.Fonts.Bold(with: 16)
         label.textColor = R.Colors.darkBg
-        label.textAlignment = .center
+        label.textAlignment = .left
+        
         return label
     }()
     
@@ -53,8 +54,11 @@ final class StackView: UIView {
         windImageView.image = UIImage(systemName: image)
         addSubview(stackViewH)
         stackViewH.addArrangedSubview(dateLabel)
+        //stackViewH.addArrangedSubview(degreeLabel)
         stackViewH.addArrangedSubview(windImageView)
-        stackViewH.addArrangedSubview(degreeLabel)
+        changeTheme()
+        
+        
         
         constraints()
     }
@@ -68,8 +72,21 @@ final class StackView: UIView {
             stackViewH.topAnchor.constraint(equalTo: topAnchor),
             stackViewH.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackViewH.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackViewH.bottomAnchor.constraint(equalTo: bottomAnchor)
+            stackViewH.bottomAnchor.constraint(equalTo: bottomAnchor),
+            
+            windImageView.trailingAnchor.constraint(equalTo: stackViewH.trailingAnchor)
         ])
-        
+    }
+    
+    func changeTheme() {
+        if traitCollection.userInterfaceStyle == .dark {
+            dateLabel.textColor = R.Colors.background
+            degreeLabel.tintColor = R.Colors.background
+            windImageView.tintColor = R.Colors.background
+        } else {
+            dateLabel.textColor = R.Colors.darkBg
+            degreeLabel.tintColor = R.Colors.darkBg
+            windImageView.tintColor = R.Colors.darkBg
+        }
     }
 }
