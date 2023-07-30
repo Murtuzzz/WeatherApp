@@ -37,13 +37,6 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         return button
     }()
     
-    private let sideMenu: CitiesView = {
-        let view = CitiesView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.frame = CGRect(x: -UIScreen.main.bounds.width, y: 0, width: UIScreen.main.bounds.width * 0.8, height: UIScreen.main.bounds.height)
-        return view
-    }()
-    
     private let windLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -76,7 +69,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     private let locationLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = R.Fonts.Bold(with: 18)
+        label.font = R.Fonts.Bold(with: 22)
         label.text = "Boston"
         label.textColor = R.Colors.darkBg
         label.textAlignment = .center
@@ -87,7 +80,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Now"
-        label.font = R.Fonts.Bold(with: 14)
+        label.font = R.Fonts.Bold(with: 16)
         label.textColor = R.Colors.darkBg
         label.textAlignment = .center
         return label
@@ -96,7 +89,8 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     private let degrees: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = R.Fonts.Bold(with: 72)
+        label.font = R.Fonts.avenirBook(with: 176)
+        label.text = "--˚"
         label.textColor = R.Colors.darkBg
         label.textAlignment = .center
         return label
@@ -105,9 +99,21 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     private let imageView: UIImageView = {
         let view = UIImageView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.image = UIImage(systemName:"cloud.sun")
-        view.contentMode = .scaleAspectFit
+        //view.image = UIImage(systemName:"cloud.sun")
+        view.contentMode = .scaleAspectFill
         view.tintColor = R.Colors.darkBg
+        //view.backgroundColor = .cyan
+//        view.layer.shadowColor = UIColor.gray.cgColor
+//        view.layer.shadowOpacity = 0.5;
+//        view.layer.shadowRadius = 0.5;
+//        view.layer.shadowOffset = CG
+        return view
+    }()
+    
+    private let backgroundImage: UIImageView = {
+        let view = UIImageView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.image = UIImage(named:"gradientBG")
         return view
     }()
     
@@ -140,9 +146,9 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.addSubview(backgroundImage)
+        view.backgroundColor = .white
         //getCity()
-        view.addSubview(sideMenu)
         //view.addSubview(menuButton)
         view.addSubview(imageView)
         view.addSubview(degrees)
@@ -152,16 +158,16 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         view.addSubview(windLabel)
         view.addSubview(windImageView)
         view.addSubview(speedLabel)
-        view.addSubview(stackViewV)
+       // view.addSubview(stackViewV)
         view.addSubview(searchButton)
         // menuButton.addTarget(self, action: #selector(openMenu), for: .touchUpInside)
         searchButton.addTarget(self, action: #selector(searchButtonTapped), for: .touchUpInside)
         constraints()
+        weatherImageAnimation()
         
     }
     
     func settings() {
-        
         APIManager.shared.getweather { [weak self] weatherData in
             DispatchQueue.main.sync {
                 guard let self else {return}
@@ -169,40 +175,61 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
                 self.changeTheme()
                 
                 self.removeAllArrangedSubviews(from: self.stackViewV)
-                self.degrees.text = "\(Int(weatherData.currentWeather.temperature))º"
+                self.degrees.text = "\(Int(weatherData.currentWeather.temperature))˚"
                 self.speedLabel.text = "\(weatherData.currentWeather.windspeed)m/s"
                 self.weatherLabel.text = weatherCodes["\(weatherData.currentWeather.weathercode)"]
-                self.imageView.image = UIImage(systemName: weatherImages["\(weatherData.currentWeather.weathercode)"]!)
+                self.imageView.image = UIImage(named: weatherImages["\(weatherData.currentWeather.weathercode)"]!)
                 
                 
-                let dateStr = weatherData.daily.time[3]
-                let weather = weatherData.daily.weathercode[3]
-                let weatherImage = weatherImages["\(weather)"] ?? ""
-                let tuesdayInfo = StackView(dateStr, weatherCodes["\(weather)"] ?? "error", with:weatherImage)
-                self.stackViewV.addArrangedSubview(tuesdayInfo)
                 
-                let dateStr2 = weatherData.daily.time[4]
-                let weather2 = weatherData.daily.weathercode[4]
-                let weatherImage2 = weatherImages["\(weather2)"] ?? ""
-                let wednesdayInfo = StackView(dateStr2, weatherCodes["\(weather2)"] ?? "error", with:weatherImage2)
-                self.stackViewV.addArrangedSubview(wednesdayInfo)
+                //let dateStr = weatherData.daily.time[3]
+                //let weather = weatherData.daily.weathercode[3]
+                //let weatherImage = weatherImages["\(weather)"] ?? ""
+                //let tuesdayInfo = StackView(dateStr, weatherCodes["\(weather)"] ?? "error", with:weatherImage)
+                //self.stackViewV.addArrangedSubview(tuesdayInfo)
                 
-                let dateStr3 = weatherData.daily.time[5]
-                let weather3 = weatherData.daily.weathercode[5]
-                let weatherImage3 = weatherImages["\(weather3)"] ?? ""
-                let thursdayInfo = StackView(dateStr3, weatherCodes["\(weather3)"] ?? "error", with:weatherImage3)
-                self.stackViewV.addArrangedSubview(thursdayInfo)
+                //let dateStr2 = weatherData.daily.time[4]
+                //let weather2 = weatherData.daily.weathercode[4]
+                //let weatherImage2 = weatherImages["\(weather2)"] ?? ""
+                //let wednesdayInfo = StackView(dateStr2, weatherCodes["\(weather2)"] ?? "error", with:weatherImage2)
+                //self.stackViewV.addArrangedSubview(wednesdayInfo)
                 
-                let dateStr4 = weatherData.daily.time[6]
-                let weather4 = weatherData.daily.weathercode[6]
-                let weatherImage4 = weatherImages["\(weather4)"] ?? ""
-                let fridayInfo = StackView(dateStr4, weatherCodes["\(weather4)"] ?? "error", with:weatherImage4)
-                self.stackViewV.addArrangedSubview(fridayInfo)
+                //let dateStr3 = weatherData.daily.time[5]
+                //let weather3 = weatherData.daily.weathercode[5]
+                //let weatherImage3 = weatherImages["\(weather3)"] ?? ""
+                //let thursdayInfo = StackView(dateStr3, weatherCodes["\(weather3)"] ?? "error", with:weatherImage3)
+                //self.stackViewV.addArrangedSubview(thursdayInfo)
+                
+                //let dateStr4 = weatherData.daily.time[6]
+             //   let weather4 = weatherData.daily.weathercode[6]
+                //let weatherImage4 = weatherImages["\(weather4)"] ?? ""
+                //let fridayInfo = StackView(dateStr4, weatherCodes["\(weather4)"] ?? "error", with:weatherImage4)
+                //self.stackViewV.addArrangedSubview(fridayInfo)
                 
                 
             }
         }
     }
+    
+    func weatherImageAnimation() {
+        let x = view.frame.height/2 - 110
+        let startY = self.imageView.frame.origin.y + x
+        let endY = startY + 10
+        func animateImageView() {
+            UIView.animate(withDuration: 1.0, animations: {
+                self.imageView.frame.origin.y = endY
+            }, completion: { _ in
+                UIView.animate(withDuration: 1.0, animations: {
+                    self.imageView.frame.origin.y = startY
+                }, completion: { _ in
+                    animateImageView()
+                })
+            })
+        }
+        // Запустите анимацию
+        animateImageView()
+    }
+    
     
     func removeAllArrangedSubviews(from stackView: UIStackView) {
         for arrangedSubview in stackView.arrangedSubviews {
@@ -326,13 +353,13 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     func constraints() {
         
         NSLayoutConstraint.activate([
-            
-            stackViewV.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -64),
-            stackViewV.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            //stackViewV.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 32),
+//
+//            stackViewV.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -64),
+//            stackViewV.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+//            //stackViewV.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 32),
             
             windLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            windLabel.topAnchor.constraint(equalTo: weatherLabel.bottomAnchor, constant: 64),
+            windLabel.topAnchor.constraint(equalTo: weatherLabel.bottomAnchor, constant: 16),
             
             windImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -30),
             windImageView.topAnchor.constraint(equalTo: windLabel.bottomAnchor, constant: 8),
@@ -347,22 +374,26 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
             searchButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 64),
             searchButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
             
+            backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             timeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             timeLabel.topAnchor.constraint(equalTo: locationLabel.bottomAnchor, constant: 8),
             
             imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -168),
-            imageView.heightAnchor.constraint(equalToConstant: 80),
-            imageView.widthAnchor.constraint(equalToConstant: 80),
+            imageView.topAnchor.constraint(equalTo: degrees.bottomAnchor, constant: -24),
+            imageView.heightAnchor.constraint(equalToConstant: 220),
+            imageView.widthAnchor.constraint(equalToConstant: 220),
             
             degrees.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 8),
-            degrees.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 32),
-            degrees.heightAnchor.constraint(equalToConstant: 60),
-            degrees.widthAnchor.constraint(equalToConstant: 150),
+            degrees.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 32),
+            degrees.heightAnchor.constraint(equalToConstant: 200),
+            degrees.widthAnchor.constraint(equalToConstant: 400),
             
             weatherLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            weatherLabel.topAnchor.constraint(equalTo: degrees.bottomAnchor, constant: 32),
+            weatherLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 32),
             weatherLabel.heightAnchor.constraint(equalToConstant: 50),
             weatherLabel.widthAnchor.constraint(equalToConstant: 150),
             //            menuButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 128),
@@ -422,7 +453,7 @@ extension WeatherController {
             weatherLabel.textColor = R.Colors.darkBg
             windImageView.tintColor = R.Colors.darkBg
             windLabel.textColor = R.Colors.darkBg
-            view.backgroundColor = R.Colors.background
+            view.backgroundColor = .white
         }
     }
 }

@@ -40,34 +40,34 @@ let weatherCodes = [
 ]
 
 let weatherImages = [
-    "0": "sun.max",
-    "1":"cloud.sun",
-    "2":"cloud.sun",
-    "3":"cloud.sun",
-    "45": "cloud.fog",
-    "48": "cloud.fog",
-    "51": "cloud.drizzle",
-    "53": "cloud.drizzle",
-    "55": "cloud.drizzle",
-    "56": "cloud.drizzle.fill",
-    "57": "cloud.drizzle.fill",
-    "61": "cloud.rain",
-    "63": "cloud.rain",
-    "65": "cloud.rain",
-    "66": "cloud.rain.fill",
-    "67": "cloud.rain.fill",
-    "71": "cloud.snow",
-    "73": "cloud.snow",
-    "75": "cloud.snow.fill",
-    "77": "snowflake",
-    "80": "cloud.heavyrain",
-    "81": "cloud.heavyrain",
-    "82": "cloud.heavyrain.fill",
-    "85": "cloud.snow.circle",
-    "86": "cloud.snow.circle",
-    "95": "cloud.bolt.rain",
-    "96": "cloud.hail",
-    "99": "cloud.hail",
+    "0": "sun",
+    "1":"sunCloud",
+    "2":"sunCloud",
+    "3":"sunCloud",
+    "45": "fog",
+    "48": "fog",
+    "51": "freezingRain",//
+    "53": "freezingRain",//
+    "55": "freezingRain",//
+    "56": "freezingRain",//
+    "57": "freezingRain",//
+    "61": "rain",
+    "63": "rain",
+    "65": "rain",
+    "66": "freezingRain",
+    "67": "freezingRain",
+    "71": "snowFall",
+    "73": "snowFall",
+    "75": "snowFall",
+    "77": "snow",
+    "80": "heavyrain",
+    "81": "heavyrain",
+    "82": "heavyrain",
+    "85": "snow",//
+    "86": "snow",//
+    "95": "thunderstorm",
+    "96": "thunderstorm",
+    "99": "thunderstorm",
 ]
 
 
