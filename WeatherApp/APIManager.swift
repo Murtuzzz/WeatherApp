@@ -10,9 +10,7 @@ import UIKit
 
 class APIManager {
     static let shared = APIManager()
-    
-    var latitude = 0.0
-    var longitude = 0.0
+
     var urlString = "https://api.open-meteo.com/v1/forecast?latitude=43.01926&longitude=44.6746016&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m&daily=weathercode&windspeed_unit=ms&timezone=Europe%2FMoscow&start_date=2023-07-24&end_date=2023-07-31"
     
     func coordinates(latitude: Double, longitude: Double) {

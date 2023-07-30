@@ -7,19 +7,19 @@
 
 import UIKit
 import MapKit
+import CoreLocation
 
 
-final class WeatherController: UIViewController {
+final class WeatherController: UIViewController, CLLocationManagerDelegate {
     
-    private var isMenuActivate = false
     private var longitude = 0.0
     private var latitude = 0.0
+    private var userLatitude = "0"
+    private var userLongitude = "0"
     private let geoCoder = CLGeocoder()
     static let shared = WeatherController()
-    private var tuesdayInfo = UIView()
-    private var wednesdayInfo = UIView()
-    private var thursdayInfo = UIView()
-    private var fridayInfo = UIView()
+    private let locationManager = CLLocationManager()
+    private var location: CLLocation?
     
     
     private let menuButton: UIButton = {
@@ -76,8 +76,8 @@ final class WeatherController: UIViewController {
     private let locationLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Moscow"
         label.font = R.Fonts.Bold(with: 18)
+        label.text = "Boston"
         label.textColor = R.Colors.darkBg
         label.textAlignment = .center
         return label
@@ -96,7 +96,6 @@ final class WeatherController: UIViewController {
     private let degrees: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        
         label.font = R.Fonts.Bold(with: 72)
         label.textColor = R.Colors.darkBg
         label.textAlignment = .center
@@ -131,12 +130,18 @@ final class WeatherController: UIViewController {
         return view
     }()
     
+    private var userLocation: CLLocation?
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        getUserLocation()
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         view.backgroundColor = .systemBackground
-        getCoordinates()
+        //getCity()
         view.addSubview(sideMenu)
         //view.addSubview(menuButton)
         view.addSubview(imageView)
@@ -168,31 +173,31 @@ final class WeatherController: UIViewController {
                 self.speedLabel.text = "\(weatherData.currentWeather.windspeed)m/s"
                 self.weatherLabel.text = weatherCodes["\(weatherData.currentWeather.weathercode)"]
                 self.imageView.image = UIImage(systemName: weatherImages["\(weatherData.currentWeather.weathercode)"]!)
-
+                
                 
                 let dateStr = weatherData.daily.time[3]
                 let weather = weatherData.daily.weathercode[3]
                 let weatherImage = weatherImages["\(weather)"] ?? ""
-                self.tuesdayInfo = StackView(dateStr, weatherCodes["\(weather)"] ?? "error", with:weatherImage)
-                self.stackViewV.addArrangedSubview(self.tuesdayInfo)
+                let tuesdayInfo = StackView(dateStr, weatherCodes["\(weather)"] ?? "error", with:weatherImage)
+                self.stackViewV.addArrangedSubview(tuesdayInfo)
                 
                 let dateStr2 = weatherData.daily.time[4]
                 let weather2 = weatherData.daily.weathercode[4]
                 let weatherImage2 = weatherImages["\(weather2)"] ?? ""
-                self.wednesdayInfo = StackView(dateStr2, weatherCodes["\(weather2)"] ?? "error", with:weatherImage2)
-                self.stackViewV.addArrangedSubview(self.wednesdayInfo)
+                let wednesdayInfo = StackView(dateStr2, weatherCodes["\(weather2)"] ?? "error", with:weatherImage2)
+                self.stackViewV.addArrangedSubview(wednesdayInfo)
                 
                 let dateStr3 = weatherData.daily.time[5]
                 let weather3 = weatherData.daily.weathercode[5]
                 let weatherImage3 = weatherImages["\(weather3)"] ?? ""
-                self.thursdayInfo = StackView(dateStr3, weatherCodes["\(weather3)"] ?? "error", with:weatherImage3)
-                self.stackViewV.addArrangedSubview(self.thursdayInfo)
+                let thursdayInfo = StackView(dateStr3, weatherCodes["\(weather3)"] ?? "error", with:weatherImage3)
+                self.stackViewV.addArrangedSubview(thursdayInfo)
                 
                 let dateStr4 = weatherData.daily.time[6]
                 let weather4 = weatherData.daily.weathercode[6]
                 let weatherImage4 = weatherImages["\(weather4)"] ?? ""
-                self.fridayInfo = StackView(dateStr4, weatherCodes["\(weather4)"] ?? "error", with:weatherImage4)
-                self.stackViewV.addArrangedSubview(self.fridayInfo)
+                let fridayInfo = StackView(dateStr4, weatherCodes["\(weather4)"] ?? "error", with:weatherImage4)
+                self.stackViewV.addArrangedSubview(fridayInfo)
                 
                 
             }
@@ -207,15 +212,16 @@ final class WeatherController: UIViewController {
             arrangedSubview.removeFromSuperview()
         }
     }
-
     
+    //название - координаты
     func getCoordinates() {
-        self.geoCoder.geocodeAddressString(self.locationLabel.text ?? "Vladikavkaz") { (placemarks, error) in
+        self.geoCoder.geocodeAddressString(self.locationLabel.text ?? "Oslo") { (placemarks, error) in
             if error != nil {
                 self.showAlert(title: "Oops", message: "This city doesn't exist")
                 self.locationLabel.text = "Vladikavkaz"
                 return
             }
+            
             if let placemarks = placemarks, let location = placemarks.first?.location {
                 let coordinates = location.coordinate
                 print("Координаты города \(self.locationLabel.text ?? "") - Широта: \(coordinates.latitude), Долгота: \(coordinates.longitude)")
@@ -228,6 +234,84 @@ final class WeatherController: UIViewController {
             }
         }
     }
+    
+    //MARK: - User location
+    
+    func getUserLocation() {
+        self.locationManager.delegate = self
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        self.locationManager.startUpdatingLocation()
+        let authStatus = self.locationManager.authorizationStatus
+        
+        if authStatus == .denied || authStatus == .restricted { self.showLocationServicesDeniedAlert()
+            return
+        } else if authStatus == .notDetermined { self.locationManager.requestWhenInUseAuthorization()
+            return
+        }
+    }
+    
+    func locationManager( _ manager: CLLocationManager, didFailWithError error: Error) {
+      print("didFailWithError \(error.localizedDescription)")
+    }
+    
+    func locationManager( _ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let newLocation = locations.last!
+        print("didUpdateLocations \(newLocation)")
+        location = newLocation
+        print(location as Any)
+        updateLabels()
+      
+        
+    }
+    
+    func updateLabels() {
+        if let location = location {
+            userLatitude = String( format: "%.8f", location.coordinate.latitude)
+            userLongitude = String( format: "%.8f", location.coordinate.longitude)
+            print(userLongitude)
+            print(userLatitude)
+            let userLocation = CLLocation(latitude: Double(userLatitude) ?? 55.7586642, longitude: Double(userLongitude) ?? 37.6192919)
+            getCity(location: userLocation)
+        
+        } else {
+            userLatitude = ""
+            userLongitude = ""
+        }
+       
+        
+    }
+    
+    func showLocationServicesDeniedAlert() {
+        let alert = UIAlertController(title: "Location Services Disabled", message: "Please enable location services for this app in Settings.", preferredStyle: .alert)
+
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okAction)
+
+    present(alert, animated: true, completion: nil)
+    }
+    
+    
+    
+    func getCity(location: CLLocation) {
+        print("GETCITY")
+        CLGeocoder().reverseGeocodeLocation(location) { (placemarks, error) in
+            if let error = error {
+                print("Reverse geocoding failed: \(error.localizedDescription)")
+                return
+            }
+            if let placemark = placemarks?.first {
+                print("GETCITY2")
+                // Получение информации о местоположении
+                let address = "\(placemark.postalCode ?? ""), \(placemark.locality ?? ""), \(placemark.country ?? "")"
+                print(address)
+                self.locationLabel.text = placemark.locality
+                self.getCoordinates()
+                print(placemark.locality as Any)
+            }
+        }
+    }
+    
+    
     
     func searchTheCity() {
         searchButton.addTarget(self, action: #selector(searchButtonTapped), for: .touchUpInside)
@@ -342,3 +426,4 @@ extension WeatherController {
         }
     }
 }
+
