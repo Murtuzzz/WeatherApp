@@ -60,9 +60,9 @@ let weatherImages = [
     "73": "snowFall",
     "75": "snowFall",
     "77": "snow",
-    "80": "heavyrain",
-    "81": "heavyrain",
-    "82": "heavyrain",
+    "80": "heavyRain",
+    "81": "heavyRain",
+    "82": "heavyRain",
     "85": "snow",//
     "86": "snow",//
     "95": "thunderstorm",
@@ -70,4 +70,33 @@ let weatherImages = [
     "99": "thunderstorm",
 ]
 
-
+let backgroundImg = [
+    "0": "clearBg",
+    "1":"clearBg",
+    "2":"clearBg",
+    "3":"clearBg",
+    "45": "clearBg",
+    "48": "clearBg",
+    "51": "clearBg",//
+    "53": "clearBg",//
+    "55": "clearBg",//
+    "56": "clearBg",//
+    "57": "clearBg",//
+    "61": "rainyBg",
+    "63": "rainyBg",
+    "65": "rainyBg",
+    "66": "clearBg",
+    "67": "clearBg",
+    "71": "clearBg",
+    "73": "clearBg",
+    "75": "clearBg",
+    "77": "clearBg",
+    "80": "rainyBg",
+    "81": "rainyBg",
+    "82": "rainyBg",
+    "85": "clearBg",//
+    "86": "clearBg",//
+    "95": "rainyBg",
+    "96": "rainyBg",
+    "99": "rainyBg",
+]

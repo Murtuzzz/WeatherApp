@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "backgroundBG.png",
+      "filename" : "gradientBG.png",
       "idiom" : "universal",
       "scale" : "1x"
     },

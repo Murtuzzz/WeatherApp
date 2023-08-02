@@ -63,12 +63,14 @@ struct Hourly: Codable {
     let temperature2M: [Double]
     let relativehumidity2M: [Int]
     let windspeed10M: [Double]
+    let weathercode: [Int]
 
     enum CodingKeys: String, CodingKey {
         case time
         case temperature2M = "temperature_2m"
         case relativehumidity2M = "relativehumidity_2m"
         case windspeed10M = "windspeed_10m"
+        case weathercode
     }
 }
 
@@ -83,3 +85,4 @@ struct HourlyUnits: Codable {
         case windspeed10M = "windspeed_10m"
     }
 }
+

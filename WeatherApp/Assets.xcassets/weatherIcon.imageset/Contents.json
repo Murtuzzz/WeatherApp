@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "backgroundBG.png",
+      "filename" : "weatherIcon.png",
       "idiom" : "universal",
       "scale" : "1x"
     },

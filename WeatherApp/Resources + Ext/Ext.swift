@@ -51,6 +51,41 @@ extension UIViewController {
         alert.addAction(okAction)
         present(alert,animated: true)
     }
-    
 }
   
+extension UIView {
+    func getWeekHourlyTemp(_ list: [Double]) -> [[Double]] {
+        var list = list
+        var weekHourlyTemp: [[Double]] = []
+        var array: [Double] = []
+        var index = 0
+        var hours = 0
+
+        for _ in 0...7 {
+            for el in list {
+                if array.count != 24 {
+                    array.append(el)
+                    list.remove(at: index)
+                } else {
+                    weekHourlyTemp.append(array)
+                    array = []
+                }
+            }
+        }
+        return weekHourlyTemp
+    }
+    
+    func getAvgDayTemp(_ list: [[Double]]) -> [Int] {
+        var averageDayTemp: [Int] = []
+        
+        for ind in 0...6 {
+            var sum = 0.0
+            for el in list[ind] {
+                sum += el
+            }
+            var avgTemp = sum/24
+            averageDayTemp.append(Int(avgTemp))
+        }
+        return averageDayTemp
+    }
+}

@@ -21,6 +21,12 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     private var location: CLLocation?
     
+    private let weekdayCollection: WeekdayViewCollection = {
+        let view = WeekdayViewCollection()
+        view.layer.cornerRadius = 15
+        
+        return view
+    }()
     
     private let menuButton: UIButton = {
         let button = UIButton(type: .system)
@@ -90,7 +96,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = R.Fonts.avenirBook(with: 176)
-        label.text = "--˚"
+        label.text = "00˚"
         label.textColor = R.Colors.darkBg
         label.textAlignment = .center
         return label
@@ -99,7 +105,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     private let imageView: UIImageView = {
         let view = UIImageView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        //view.image = UIImage(systemName:"cloud.sun")
+        view.image = UIImage(named:"fog")
         view.contentMode = .scaleAspectFill
         view.tintColor = R.Colors.darkBg
         //view.backgroundColor = .cyan
@@ -146,18 +152,20 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        //getUserLocation()
         view.addSubview(backgroundImage)
         view.backgroundColor = .white
         //getCity()
         //view.addSubview(menuButton)
+        view.addSubview(weekdayCollection)
         view.addSubview(imageView)
         view.addSubview(degrees)
         view.addSubview(weatherLabel)
         view.addSubview(locationLabel)
         view.addSubview(timeLabel)
-        view.addSubview(windLabel)
-        view.addSubview(windImageView)
-        view.addSubview(speedLabel)
+//        view.addSubview(windLabel)
+//        view.addSubview(windImageView)
+//        view.addSubview(speedLabel)
        // view.addSubview(stackViewV)
         view.addSubview(searchButton)
         // menuButton.addTarget(self, action: #selector(openMenu), for: .touchUpInside)
@@ -172,6 +180,8 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
             DispatchQueue.main.sync {
                 guard let self else {return}
                 
+                let rainWeatherCodes: [Int] = [61,63,65,80,81,82,95,96,99]
+                
                 self.changeTheme()
                 
                 self.removeAllArrangedSubviews(from: self.stackViewV)
@@ -179,33 +189,23 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
                 self.speedLabel.text = "\(weatherData.currentWeather.windspeed)m/s"
                 self.weatherLabel.text = weatherCodes["\(weatherData.currentWeather.weathercode)"]
                 self.imageView.image = UIImage(named: weatherImages["\(weatherData.currentWeather.weathercode)"]!)
+                self.backgroundImage.image = UIImage(named: backgroundImg["\(weatherData.currentWeather.weathercode)"]!)
                 
-                
-                
-                //let dateStr = weatherData.daily.time[3]
-                //let weather = weatherData.daily.weathercode[3]
-                //let weatherImage = weatherImages["\(weather)"] ?? ""
-                //let tuesdayInfo = StackView(dateStr, weatherCodes["\(weather)"] ?? "error", with:weatherImage)
-                //self.stackViewV.addArrangedSubview(tuesdayInfo)
-                
-                //let dateStr2 = weatherData.daily.time[4]
-                //let weather2 = weatherData.daily.weathercode[4]
-                //let weatherImage2 = weatherImages["\(weather2)"] ?? ""
-                //let wednesdayInfo = StackView(dateStr2, weatherCodes["\(weather2)"] ?? "error", with:weatherImage2)
-                //self.stackViewV.addArrangedSubview(wednesdayInfo)
-                
-                //let dateStr3 = weatherData.daily.time[5]
-                //let weather3 = weatherData.daily.weathercode[5]
-                //let weatherImage3 = weatherImages["\(weather3)"] ?? ""
-                //let thursdayInfo = StackView(dateStr3, weatherCodes["\(weather3)"] ?? "error", with:weatherImage3)
-                //self.stackViewV.addArrangedSubview(thursdayInfo)
-                
-                //let dateStr4 = weatherData.daily.time[6]
-             //   let weather4 = weatherData.daily.weathercode[6]
-                //let weatherImage4 = weatherImages["\(weather4)"] ?? ""
-                //let fridayInfo = StackView(dateStr4, weatherCodes["\(weather4)"] ?? "error", with:weatherImage4)
-                //self.stackViewV.addArrangedSubview(fridayInfo)
-                
+                if rainWeatherCodes.contains(weatherData.currentWeather.weathercode) {
+                    self.degrees.textColor = R.Colors.background
+                    self.timeLabel.textColor = R.Colors.background
+                    self.locationLabel.textColor = R.Colors.background
+                    self.weatherLabel.textColor = R.Colors.background
+                    self.searchButton.tintColor = R.Colors.background
+                } else {
+                    self.degrees.textColor = R.Colors.darkBg
+                    self.timeLabel.textColor = R.Colors.darkBg
+                    self.locationLabel.textColor = R.Colors.darkBg
+                    self.weatherLabel.textColor = R.Colors.darkBg
+                    self.searchButton.tintColor = R.Colors.darkBg
+                }
+
+                self.weekdayCollection.updateTable()
                 
             }
         }
@@ -277,46 +277,6 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         }
     }
     
-    func locationManager( _ manager: CLLocationManager, didFailWithError error: Error) {
-      print("didFailWithError \(error.localizedDescription)")
-    }
-    
-    func locationManager( _ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let newLocation = locations.last!
-        print("didUpdateLocations \(newLocation)")
-        location = newLocation
-        print(location as Any)
-        updateLabels()
-      
-        
-    }
-    
-    func updateLabels() {
-        if let location = location {
-            userLatitude = String( format: "%.8f", location.coordinate.latitude)
-            userLongitude = String( format: "%.8f", location.coordinate.longitude)
-            print(userLongitude)
-            print(userLatitude)
-            let userLocation = CLLocation(latitude: Double(userLatitude) ?? 55.7586642, longitude: Double(userLongitude) ?? 37.6192919)
-            getCity(location: userLocation)
-        
-        } else {
-            userLatitude = ""
-            userLongitude = ""
-        }
-       
-        
-    }
-    
-    func showLocationServicesDeniedAlert() {
-        let alert = UIAlertController(title: "Location Services Disabled", message: "Please enable location services for this app in Settings.", preferredStyle: .alert)
-
-        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-        alert.addAction(okAction)
-
-    present(alert, animated: true, completion: nil)
-    }
-    
     
     
     func getCity(location: CLLocation) {
@@ -351,6 +311,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     }
     
     func constraints() {
+        weekdayCollection.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
 //
@@ -358,15 +319,21 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
 //            stackViewV.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 //            //stackViewV.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 32),
             
-            windLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            windLabel.topAnchor.constraint(equalTo: weatherLabel.bottomAnchor, constant: 16),
+            weekdayCollection.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            weekdayCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            weekdayCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            weekdayCollection.topAnchor.constraint(equalTo: weatherLabel.bottomAnchor, constant: 32),
+            weekdayCollection.heightAnchor.constraint(equalToConstant: 100),
             
-            windImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -30),
-            windImageView.topAnchor.constraint(equalTo: windLabel.bottomAnchor, constant: 8),
-            
-            //speedLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            speedLabel.leadingAnchor.constraint(equalTo: windImageView.trailingAnchor, constant: 8),
-            speedLabel.centerYAnchor.constraint(equalTo: windImageView.centerYAnchor),
+//            windLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+//            windLabel.topAnchor.constraint(equalTo: weatherLabel.bottomAnchor, constant: 16),
+//
+//            windImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -30),
+//            windImageView.topAnchor.constraint(equalTo: windLabel.bottomAnchor, constant: 8),
+//
+//            //speedLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+//            speedLabel.leadingAnchor.constraint(equalTo: windImageView.trailingAnchor, constant: 8),
+//            speedLabel.centerYAnchor.constraint(equalTo: windImageView.centerYAnchor),
             
             locationLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             locationLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 64),
@@ -455,6 +422,51 @@ extension WeatherController {
             windLabel.textColor = R.Colors.darkBg
             view.backgroundColor = .white
         }
+    }
+    
+    func locationManager( _ manager: CLLocationManager, didFailWithError error: Error) {
+      print("didFailWithError \(error.localizedDescription)")
+    }
+    
+    func locationManager( _ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let newLocation = locations.last!
+        locations.forEach {item in
+            print(item)
+        }
+        //print("didUpdateLocations \(newLocation)")
+        print("1")
+        location = newLocation
+//        print(location as Any)
+        updateLabels()
+      
+        
+    }
+    
+    func updateLabels() {
+        if let location = location {
+            userLatitude = String( format: "%.8f", location.coordinate.latitude)
+            userLongitude = String( format: "%.8f", location.coordinate.longitude)
+            print(userLongitude)
+            print(userLatitude)
+            let userLocation = CLLocation(latitude: Double(userLatitude) ?? 55.7586642, longitude: Double(userLongitude) ?? 37.6192919)
+            getCity(location: userLocation)
+            
+        
+        } else {
+            userLatitude = ""
+            userLongitude = ""
+        }
+       
+        
+    }
+    
+    func showLocationServicesDeniedAlert() {
+        let alert = UIAlertController(title: "Location Services Disabled", message: "Please enable location services for this app in Settings.", preferredStyle: .alert)
+
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okAction)
+
+    present(alert, animated: true, completion: nil)
     }
 }
 
