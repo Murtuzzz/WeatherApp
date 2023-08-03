@@ -7,18 +7,18 @@
 
 import UIKit
 
-final class WeekdayViewCell: UICollectionViewCell {
-    static let id = "WeekdayViewCell"
+final class DailyCell: UICollectionViewCell {
+    static let id = "DailyViewCell"
     
     private let stackView: UIStackView = {
         let view = UIStackView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.axis = .vertical
-//        view.spacing = 5
+        view.axis = .horizontal
+        view.spacing = 5
         return view
     }()
     
-    private let dateLabel: UILabel = {
+    private let dayLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
@@ -41,11 +41,11 @@ final class WeekdayViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: .zero)
-        stackView.addArrangedSubview(dateLabel)
+        stackView.addArrangedSubview(dayLabel)
         stackView.addArrangedSubview(weatherImage)
         stackView.addArrangedSubview(tempLabel)
         addSubview(stackView)
-        backgroundColor = .clear
+        //backgroundColor = .white
         constraints()
     }
     
@@ -56,7 +56,7 @@ final class WeekdayViewCell: UICollectionViewCell {
     public func configurate(temp: String, image: String, date: String) {
         tempLabel.text = temp
         weatherImage.image = UIImage(named: image)
-        dateLabel.text = date
+        dayLabel.text = date
     }
     
     func constraints() {
@@ -65,9 +65,11 @@ final class WeekdayViewCell: UICollectionViewCell {
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            
-            weatherImage.topAnchor.constraint(equalTo: stackView.topAnchor, constant: 35),
-            weatherImage.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: -35),
+//
+//            weatherImage.topAnchor.constraint(equalTo: stackView.topAnchor, constant: 35),
+//            weatherImage.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: -35),
+            weatherImage.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 64),
+            weatherImage.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -64),
             
             
         ])

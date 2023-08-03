@@ -54,12 +54,31 @@ extension UIViewController {
 }
   
 extension UIView {
+    
+    func dateFormatter(week: [String]) -> [String] {
+        var weekDays: [String] = []
+        for day in week {
+            let dateString = day
+            var formattedDate = ""
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyy-MM-dd"
+            
+            if let date = dateFormatter.date(from: dateString) {
+                let newDayFormatter = DateFormatter()
+                newDayFormatter.dateFormat = "EEE,d"
+                
+                formattedDate = newDayFormatter.string(from: date)
+                weekDays.append(formattedDate)
+            }
+        }
+        return weekDays
+    }
+    
     func getWeekHourlyTemp(_ list: [Double]) -> [[Double]] {
         var list = list
         var weekHourlyTemp: [[Double]] = []
         var array: [Double] = []
-        var index = 0
-        var hours = 0
+        let index = 0
 
         for _ in 0...7 {
             for el in list {
@@ -83,7 +102,7 @@ extension UIView {
             for el in list[ind] {
                 sum += el
             }
-            var avgTemp = sum/24
+            let avgTemp = sum/24
             averageDayTemp.append(Int(avgTemp))
         }
         return averageDayTemp

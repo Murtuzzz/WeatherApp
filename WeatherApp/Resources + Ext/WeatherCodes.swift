@@ -60,7 +60,7 @@ let weatherImages = [
     "73": "snowFall",
     "75": "snowFall",
     "77": "snow",
-    "80": "heavyRain",
+    "80": "sunCloud",
     "81": "heavyRain",
     "82": "heavyRain",
     "85": "snow",//
@@ -91,7 +91,7 @@ let backgroundImg = [
     "73": "clearBg",
     "75": "clearBg",
     "77": "clearBg",
-    "80": "rainyBg",
+    "80": "clearBg",
     "81": "rainyBg",
     "82": "rainyBg",
     "85": "clearBg",//

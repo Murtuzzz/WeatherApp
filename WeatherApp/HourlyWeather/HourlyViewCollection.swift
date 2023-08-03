@@ -7,13 +7,13 @@
 
 import UIKit
 
-struct WeekDays {
+struct HourItems {
     let time: String
     let weatherIcon: String
     let temp: String
 }
 
-final class WeekdayViewCollection: UIView, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+final class HourlyViewCollection: UIView, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
 //    private let container: UIView = {
 //        let view = UIView()
@@ -21,7 +21,9 @@ final class WeekdayViewCollection: UIView, UICollectionViewDataSource, UICollect
 //        return view
 //    }()
     private var collectionView: UICollectionView?
-    private var dataSource: [WeekDays] = []
+    private var dataSource: [HourItems] = []
+    private var blurEffect = UIBlurEffect(style: .light)
+    private var blurEffectView = UIVisualEffectView()
     
     override init(frame: CGRect) {
         super.init(frame: .zero)
@@ -39,11 +41,12 @@ final class WeekdayViewCollection: UIView, UICollectionViewDataSource, UICollect
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         layout.minimumLineSpacing = 10
-        
-        
+        blurEffect = UIBlurEffect(style: .light)
+        blurEffectView = UIVisualEffectView(effect: blurEffect)
 
         
         APIManager.shared.getweather { [weak self] weatherData in
+            
             DispatchQueue.main.sync {
                 
 //                print(weatherData.daily.time)
@@ -54,6 +57,14 @@ final class WeekdayViewCollection: UIView, UICollectionViewDataSource, UICollect
                 let weekHourlyTemp = self?.getWeekHourlyTemp(weatherData.hourly.temperature2M)
                 let wc = weatherData.hourly.weathercode
                
+                
+                let week:[String] = weatherData.daily.time
+                let weekDays:[String] = self!.dateFormatter(week: week)
+                
+               
+                
+//                print(self!.dateFormatter(day: weatherData.daily.time[0]))
+                
                 
                 self?.dataSource = [
                     .init(time: "00", weatherIcon: weatherImages["\(wc[0])"] ?? "", temp: "\(Int(weekHourlyTemp?[0][0] ?? 00))˚"),
@@ -87,20 +98,18 @@ final class WeekdayViewCollection: UIView, UICollectionViewDataSource, UICollect
         
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         
-        let blurEffect = UIBlurEffect(style: .light)
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
         blurEffectView.translatesAutoresizingMaskIntoConstraints = false
         blurEffectView.frame = bounds
         blurEffectView.layer.cornerRadius = 10
         blurEffectView.layer.masksToBounds = true
         blurEffectView.layer.borderWidth = 1
-        blurEffectView.layer.borderColor = UIColor.systemGray.withAlphaComponent(0.2).cgColor
+        blurEffectView.layer.borderColor = UIColor.systemGray.withAlphaComponent(0.6).cgColor
         blurEffectView.alpha = 0.2
         addSubview(blurEffectView)
         
         guard let collectionView = collectionView else {return}
         
-        collectionView.register(WeekdayViewCell.self, forCellWithReuseIdentifier: WeekdayViewCell.id)
+        collectionView.register(HourlyViewCell.self, forCellWithReuseIdentifier: HourlyViewCell.id)
         
         collectionView.backgroundColor = .clear
         collectionView.dataSource = self
@@ -130,19 +139,20 @@ final class WeekdayViewCollection: UIView, UICollectionViewDataSource, UICollect
     
     public func updateTable() {
         collectionView?.removeFromSuperview()
+        blurEffectView.removeFromSuperview()
         collectionApperance()
         print("Update")
     }
     
 }
 
-extension WeekdayViewCollection {
+extension HourlyViewCollection {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         dataSource.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: WeekdayViewCell.id, for: indexPath) as! WeekdayViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HourlyViewCell.id, for: indexPath) as! HourlyViewCell
         
         let daysArray = dataSource[indexPath.row]
         
