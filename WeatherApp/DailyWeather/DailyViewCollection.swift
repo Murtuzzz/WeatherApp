@@ -11,7 +11,8 @@ import UIKit
 struct DaysItems {
     let day: String
     let weatherIcon: String
-    let temp: String
+    let maxTemp: String
+    let minTemp: String
 }
 
 final class DailyViewCollection: UIView, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -44,24 +45,21 @@ final class DailyViewCollection: UIView, UICollectionViewDataSource, UICollectio
 
             DispatchQueue.main.sync {
 
-//                print(weatherData.daily.time)
-//                print(weatherData.hourly.temperature2M)
-//                print(weatherData.hourly.time)
-//                print(weatherData.hourly.weathercode)
-
                 print("Day \(weatherData.daily.weathercode)")
                 
                 let week:[String] = weatherData.daily.time
                 let weekDays:[String] = self!.dateFormatter(week: week)
                 let dailyWc = weatherData.daily.weathercode
+                let tempMax = weatherData.daily.temperature2MMax
+                let tempMin = weatherData.daily.temperature2MMin
 
-                self?.dataSource = [.init(day: weekDays[0], weatherIcon: weatherImages["\(dailyWc[0])"]!, temp: "00"),
-                                    .init(day: weekDays[1], weatherIcon: weatherImages["\(dailyWc[1])"]!, temp: "00"),
-                                    .init(day: weekDays[2], weatherIcon: weatherImages["\(dailyWc[2])"]!, temp: "00"),
-                                    .init(day: weekDays[3], weatherIcon: weatherImages["\(dailyWc[3])"]!, temp: "00"),
-                                    .init(day: weekDays[4], weatherIcon: weatherImages["\(dailyWc[4])"]!, temp: "00"),
-                                    .init(day: weekDays[5], weatherIcon: weatherImages["\(dailyWc[5])"]!, temp: "00"),
-                                    .init(day: weekDays[6], weatherIcon: weatherImages["\(dailyWc[6])"]!, temp: "00")]
+                self?.dataSource = [.init(day: "Today", weatherIcon: weatherImages["\(dailyWc[0])"]!, maxTemp: "\(tempMax[0])˚",minTemp: "\(tempMin[0])˚"),
+                                    .init(day: weekDays[1], weatherIcon: weatherImages["\(dailyWc[1])"]!, maxTemp: "\(tempMax[1])˚",minTemp: "\(tempMin[1])˚"),
+                                    .init(day: weekDays[2], weatherIcon: weatherImages["\(dailyWc[2])"]!, maxTemp: "\(tempMax[2])˚",minTemp: "\(tempMin[2])˚"),
+                                    .init(day: weekDays[3], weatherIcon: weatherImages["\(dailyWc[3])"]!, maxTemp: "\(tempMax[3])˚",minTemp: "\(tempMin[3])˚"),
+                                    .init(day: weekDays[4], weatherIcon: weatherImages["\(dailyWc[4])"]!, maxTemp: "\(tempMax[4])˚",minTemp: "\(tempMin[4])˚"),
+                                    .init(day: weekDays[5], weatherIcon: weatherImages["\(dailyWc[5])"]!, maxTemp: "\(tempMax[5])˚",minTemp: "\(tempMin[5])˚"),
+                                    .init(day: weekDays[6], weatherIcon: weatherImages["\(dailyWc[6])"]!, maxTemp: "\(tempMax[6])˚",minTemp: "\(tempMin[6])˚")]
                 
                 self?.collectionView!.reloadData()
             }
@@ -74,6 +72,7 @@ final class DailyViewCollection: UIView, UICollectionViewDataSource, UICollectio
         blurEffectView.layer.cornerRadius = 10
         blurEffectView.layer.masksToBounds = true
         blurEffectView.layer.borderWidth = 1
+//        blurEffectView.layer.borderColor = UIColor.systemGray.withAlphaComponent(0.5).cgColor
         blurEffectView.layer.borderColor = UIColor.systemGray.withAlphaComponent(0.5).cgColor
         blurEffectView.alpha = 0.2
         addSubview(blurEffectView)
@@ -128,7 +127,7 @@ extension DailyViewCollection {
 
         let daysArray = dataSource[indexPath.row]
 
-        cell.configurate(temp: daysArray.temp, image: daysArray.weatherIcon, date: daysArray.day)
+        cell.configurate(maxTemp: daysArray.maxTemp, image: daysArray.weatherIcon, date: daysArray.day, minTemp: daysArray.minTemp)
         
         return cell
     }

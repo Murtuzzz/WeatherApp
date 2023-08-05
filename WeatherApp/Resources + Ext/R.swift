@@ -39,6 +39,10 @@ enum R {
         static func avenirBook(with size: CGFloat) -> UIFont {
             UIFont(name: "Avenir-Book", size: size) ?? UIFont()
         }
+        
+        static func Humans(with size: CGFloat) -> UIFont {
+            UIFont(name: "Humanst521", size: size) ?? UIFont()
+        }
     }
 }
 

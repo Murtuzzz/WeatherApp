@@ -49,12 +49,24 @@ struct CurrentWeather: Codable {
 struct Daily: Codable {
     let time: [String]
     let weathercode: [Int]
-   
+    let temperature2MMax, temperature2MMin: [Double]
+
+    enum CodingKeys: String, CodingKey {
+        case time, weathercode
+        case temperature2MMax = "temperature_2m_max"
+        case temperature2MMin = "temperature_2m_min"
+    }
 }
 
 // MARK: - DailyUnits
 struct DailyUnits: Codable {
-    let time, weathercode: String
+    let time, weathercode, temperature2MMax, temperature2MMin: String
+
+    enum CodingKeys: String, CodingKey {
+        case time, weathercode
+        case temperature2MMax = "temperature_2m_max"
+        case temperature2MMin = "temperature_2m_min"
+    }
 }
 
 // MARK: - Hourly

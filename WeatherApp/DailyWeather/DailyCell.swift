@@ -14,7 +14,6 @@ final class DailyCell: UICollectionViewCell {
         let view = UIStackView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.axis = .horizontal
-        view.spacing = 5
         return view
     }()
     
@@ -22,6 +21,7 @@ final class DailyCell: UICollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
+        label.font = R.Fonts.avenirBook(with: 16)
         return label
     }()
     
@@ -29,22 +29,47 @@ final class DailyCell: UICollectionViewCell {
         let view = UIImageView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.contentMode = .scaleAspectFit
+        
         return view
     }()
     
-    private let tempLabel: UILabel = {
+    private let maxTempLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.textAlignment = .center
+        label.textAlignment = .right
+        label.font = R.Fonts.avenirBook(with: 16)
         return label
+    }()
+    
+    private let minTempLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textAlignment = .left
+        label.font = R.Fonts.avenirBook(with: 16)
+        return label
+    }()
+    
+    private let minMaxView: UIImageView = {
+        let view = UIImageView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = 5
+        view.image = UIImage(named: "minMax")
+        view.layer.masksToBounds = true
+        view.contentMode = .scaleAspectFit
+        
+        return view
     }()
     
     override init(frame: CGRect) {
         super.init(frame: .zero)
+        
         stackView.addArrangedSubview(dayLabel)
         stackView.addArrangedSubview(weatherImage)
-        stackView.addArrangedSubview(tempLabel)
+        stackView.addArrangedSubview(minTempLabel)
+//        stackView.addArrangedSubview(minMaxView)
+        stackView.addArrangedSubview(maxTempLabel)
         addSubview(stackView)
+        addSubview(minMaxView)
         //backgroundColor = .white
         constraints()
     }
@@ -53,8 +78,9 @@ final class DailyCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func configurate(temp: String, image: String, date: String) {
-        tempLabel.text = temp
+    public func configurate(maxTemp: String, image: String, date: String, minTemp: String) {
+        maxTempLabel.text = maxTemp
+        minTempLabel.text = minTemp
         weatherImage.image = UIImage(named: image)
         dayLabel.text = date
     }
@@ -63,13 +89,19 @@ final class DailyCell: UICollectionViewCell {
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: topAnchor),
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
-//
-//            weatherImage.topAnchor.constraint(equalTo: stackView.topAnchor, constant: 35),
-//            weatherImage.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: -35),
+            
             weatherImage.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 64),
-            weatherImage.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -64),
+            weatherImage.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -200),
+            
+            maxTempLabel.leadingAnchor.constraint(equalTo: minTempLabel.trailingAnchor),
+       
+            
+            minMaxView.leadingAnchor.constraint(equalTo: minTempLabel.trailingAnchor, constant: 16),
+            minMaxView.centerYAnchor.constraint(equalTo: stackView.centerYAnchor),
+            minMaxView.heightAnchor.constraint(equalToConstant: 10),
+            minMaxView.widthAnchor.constraint(equalToConstant: 88)
             
             
         ])

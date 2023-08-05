@@ -27,6 +27,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     
     private let scrollView: UIScrollView = {
         let view = UIScrollView()
+        view.backgroundColor = .clear
         view.showsVerticalScrollIndicator = false
         view.isDirectionalLockEnabled = true
         view.showsHorizontalScrollIndicator = false
@@ -37,12 +38,14 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     let contentView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .clear
         return view
     }()
     
     let middleView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .clear
         return view
     }()
     
@@ -93,7 +96,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     private let locationLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = R.Fonts.Bold(with: 22)
+        label.font = R.Fonts.avenirBook(with: 22)
         label.text = "Boston"
         label.textColor = R.Colors.darkBg
         label.adjustsFontForContentSizeCategory = true
@@ -106,7 +109,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Now"
-        label.font = R.Fonts.Bold(with: 16)
+        label.font = R.Fonts.avenirBook(with: 16)
         label.textColor = R.Colors.darkBg
         label.textAlignment = .center
         return label
@@ -144,7 +147,18 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Mostly cloudy"
-        label.font = R.Fonts.avenir(with: 18)
+        label.font = R.Fonts.avenirBook(with: 18)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.textColor = R.Colors.darkBg
+        return label
+    }()
+    
+    private let headerLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "7-Day forecast"
+        label.font = R.Fonts.avenirBook(with: 14)
         label.textAlignment = .center
         label.numberOfLines = 0
         label.textColor = R.Colors.darkBg
@@ -170,24 +184,27 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.addSubview(backgroundImage)
         view.addSubview(scrollView)
         
-        middleView.addSubview(backgroundImage)
-        middleView.backgroundColor = .white
+        view.addSubview(locationLabel)
+        view.addSubview(searchButton)
+        
         middleView.addSubview(hourlyCollection)
         middleView.addSubview(imageView)
+        middleView.addSubview(timeLabel)
         middleView.addSubview(degrees)
         middleView.addSubview(weatherLabel)
-        middleView.addSubview(locationLabel)
-        middleView.addSubview(timeLabel)
         middleView.addSubview(dailyCollection)
+        middleView.addSubview(headerLabel)
 //        view.addSubview(windLabel)
 //        view.addSubview(windImageView)
 //        view.addSubview(speedLabel)
        // view.addSubview(stackViewV)
-        middleView.addSubview(searchButton)
+//        middleView.addSubview(searchButton)
         contentView.addSubview(middleView)
         scrollView.addSubview(contentView)
+        
         searchButton.addTarget(self, action: #selector(searchButtonTapped), for: .touchUpInside)
         constraints()
         
@@ -333,14 +350,25 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         
         NSLayoutConstraint.activate([
             
+            backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            locationLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            locationLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            
+            searchButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            searchButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
+            
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-            contentView.heightAnchor.constraint(equalToConstant: 1024),
+            contentView.heightAnchor.constraint(equalToConstant: 1128),
             
-            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -363,8 +391,12 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
             dailyCollection.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
             dailyCollection.leadingAnchor.constraint(equalTo: middleView.leadingAnchor, constant: 24),
             dailyCollection.trailingAnchor.constraint(equalTo: middleView.trailingAnchor, constant: -24),
-            dailyCollection.topAnchor.constraint(equalTo: hourlyCollection.bottomAnchor, constant: 8),
-            dailyCollection.heightAnchor.constraint(equalToConstant: 300),
+            dailyCollection.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 8),
+            dailyCollection.heightAnchor.constraint(equalToConstant: 350),
+            
+            //headerLabel.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
+            headerLabel.leadingAnchor.constraint(equalTo: middleView.leadingAnchor, constant: 24),
+            headerLabel.topAnchor.constraint(equalTo: hourlyCollection.bottomAnchor, constant: 16),
             
 //            windLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 //            windLabel.topAnchor.constraint(equalTo: weatherLabel.bottomAnchor, constant: 16),
@@ -376,19 +408,8 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
 //            speedLabel.leadingAnchor.constraint(equalTo: windImageView.trailingAnchor, constant: 8),
 //            speedLabel.centerYAnchor.constraint(equalTo: windImageView.centerYAnchor),
             
-            locationLabel.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
-            locationLabel.topAnchor.constraint(equalTo: middleView.topAnchor, constant: 64),
-            
-            searchButton.topAnchor.constraint(equalTo: middleView.topAnchor, constant: 64),
-            searchButton.trailingAnchor.constraint(equalTo: middleView.trailingAnchor, constant: -32),
-            
-            backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
             timeLabel.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
-            timeLabel.topAnchor.constraint(equalTo: locationLabel.bottomAnchor, constant: 8),
+            timeLabel.topAnchor.constraint(equalTo: middleView.topAnchor, constant: 56),
             
             imageView.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
             imageView.topAnchor.constraint(equalTo: degrees.bottomAnchor, constant: -24),
@@ -396,7 +417,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
             imageView.widthAnchor.constraint(equalToConstant: 220),
             
             degrees.centerXAnchor.constraint(equalTo: middleView.centerXAnchor, constant: 8),
-            degrees.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 32),
+            degrees.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 16),
             degrees.heightAnchor.constraint(equalToConstant: 200),
             degrees.widthAnchor.constraint(equalToConstant: 400),
             
@@ -450,6 +471,7 @@ extension WeatherController {
             weatherLabel.textColor = R.Colors.background
             windImageView.tintColor = R.Colors.background
             windLabel.textColor = R.Colors.background
+            headerLabel.textColor = R.Colors.background
             //view.backgroundColor = R.Colors.darkBg
             backgroundImage.image = UIImage(named:"rainyBg")
         } else {
@@ -461,6 +483,7 @@ extension WeatherController {
             speedLabel.textColor = R.Colors.darkBg
             weatherLabel.textColor = R.Colors.darkBg
             windImageView.tintColor = R.Colors.darkBg
+            headerLabel.textColor = R.Colors.darkBg
             //windLabel.textColor = R.Colors.darkBg
             backgroundImage.image = UIImage(named:"gradientBG")
         }

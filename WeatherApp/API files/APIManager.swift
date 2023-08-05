@@ -11,10 +11,10 @@ import UIKit
 class APIManager {
     static let shared = APIManager()
 
-    var urlString = "https://api.open-meteo.com/v1/forecast?latitude=43.01926&longitude=44.6746016&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,weathercode&daily=weathercode&windspeed_unit=ms&timezone=Europe%2FMoscow"
+    var urlString = "https://api.open-meteo.com/v1/forecast?latitude=43.01926&longitude=44.6746016&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&windspeed_unit=ms&timezone=Europe%2FMoscow"
     
     func coordinates(latitude: Double, longitude: Double) {
-        self.urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,weathercode&daily=weathercode&windspeed_unit=ms&timezone=Europe%2FMoscow"
+        self.urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&windspeed_unit=ms&timezone=Europe%2FMoscow"
         print("Sting set")
     }
     

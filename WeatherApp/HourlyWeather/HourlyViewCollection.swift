@@ -58,16 +58,12 @@ final class HourlyViewCollection: UIView, UICollectionViewDataSource, UICollecti
                 let wc = weatherData.hourly.weathercode
                
                 
-                let week:[String] = weatherData.daily.time
-                let weekDays:[String] = self!.dateFormatter(week: week)
-                
-               
-                
+                print(weatherData.daily.temperature2MMax)
 //                print(self!.dateFormatter(day: weatherData.daily.time[0]))
                 
                 
                 self?.dataSource = [
-                    .init(time: "00", weatherIcon: weatherImages["\(wc[0])"] ?? "", temp: "\(Int(weekHourlyTemp?[0][0] ?? 00))˚"),
+                    .init(time: "00", weatherIcon: weatherImages["\(wc[0])"] ?? "", temp: "\(Int(weekHourlyTemp![0][0] ))˚"),
                     .init(time: "01", weatherIcon: weatherImages["\(wc[1])"] ?? "", temp: "\(Int(weekHourlyTemp?[0][1] ?? 00))˚"),
                     .init(time: "02", weatherIcon: weatherImages["\(wc[2])"] ?? "", temp: "\(Int(weekHourlyTemp?[0][2] ?? 00))˚"),
                     .init(time: "03", weatherIcon: weatherImages["\(wc[3])"] ?? "", temp: "\(Int(weekHourlyTemp?[0][3] ?? 00))˚"),
