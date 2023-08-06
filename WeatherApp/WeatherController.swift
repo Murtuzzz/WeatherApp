@@ -10,10 +10,17 @@ import MapKit
 import CoreLocation
 
 
-final class WeatherController: UIViewController, CLLocationManagerDelegate {
+final class WeatherController: UIViewController, CLLocationManagerDelegate, UIScrollViewDelegate {
+    
+    private let minConstraintConstant: CGFloat = 72
+    private let maxConstraintConstant: CGFloat = 300
+    private var previousContentOffsetY: CGFloat = 0
+    
+    private var degreesHeightConstraint: NSLayoutConstraint?
+    private var scrollHeightConstraint: NSLayoutConstraint?
+    
     
     private var location: CLLocation?
-    
     private var longitude = 0.0
     private var latitude = 0.0
     private var userLatitude = "0"
@@ -35,14 +42,14 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         return view
     }()
     
-    let contentView: UIView = {
+    private let contentView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .clear
         return view
     }()
     
-    let middleView: UIView = {
+    private let middleView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .clear
@@ -118,12 +125,25 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     private let degrees: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = R.Fonts.avenirBook(with: 176)
+        label.font = R.Fonts.avenirBook(with: 172)
         label.text = "00˚"
         label.adjustsFontForContentSizeCategory = true
         label.adjustsFontSizeToFitWidth = true
         label.textColor = R.Colors.darkBg
         label.textAlignment = .center
+        return label
+    }()
+    
+    private let titleDegrees: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = R.Fonts.avenirBook(with: 16)
+        label.text = "00˚"
+        label.adjustsFontForContentSizeCategory = true
+        label.adjustsFontSizeToFitWidth = true
+        label.textColor = R.Colors.darkBg
+        label.textAlignment = .center
+        label.alpha = 0
         return label
     }()
     
@@ -186,14 +206,16 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         super.viewDidLoad()
         view.addSubview(backgroundImage)
         view.addSubview(scrollView)
-        
+        view.addSubview(degrees)
         view.addSubview(locationLabel)
         view.addSubview(searchButton)
+        view.addSubview(timeLabel)
+        view.addSubview(titleDegrees)
+        
+        scrollView.delegate = self
         
         middleView.addSubview(hourlyCollection)
         middleView.addSubview(imageView)
-        middleView.addSubview(timeLabel)
-        middleView.addSubview(degrees)
         middleView.addSubview(weatherLabel)
         middleView.addSubview(dailyCollection)
         middleView.addSubview(headerLabel)
@@ -207,11 +229,12 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         
         searchButton.addTarget(self, action: #selector(searchButtonTapped), for: .touchUpInside)
         constraints()
+        setupCollectionView()
         
         
     }
     
-    func settings() {
+    func dataSetup() {
         APIManager.shared.getweather { [weak self] weatherData in
             DispatchQueue.main.sync {
                 guard let self else {return}
@@ -221,24 +244,11 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
                 
                 self.removeAllArrangedSubviews(from: self.stackViewV)
                 self.degrees.text = "\(Int(weatherData.currentWeather.temperature))˚"
+                self.titleDegrees.text = "\(Int(weatherData.currentWeather.temperature))˚"
                 self.speedLabel.text = "\(weatherData.currentWeather.windspeed)m/s"
                 self.weatherLabel.text = weatherCodes["\(weatherData.currentWeather.weathercode)"]
                 self.imageView.image = UIImage(named: weatherImages["\(weatherData.currentWeather.weathercode)"]!)
                 self.backgroundImage.image = UIImage(named: backgroundImg["\(weatherData.currentWeather.weathercode)"]!)
-                
-//                if rainWeatherCodes.contains(weatherData.currentWeather.weathercode) {
-//                    self.degrees.textColor = R.Colors.background
-//                    self.timeLabel.textColor = R.Colors.background
-//                    self.locationLabel.textColor = R.Colors.background
-//                    self.weatherLabel.textColor = R.Colors.background
-//                    self.searchButton.tintColor = R.Colors.background
-//                } else {
-//                    self.degrees.textColor = R.Colors.darkBg
-//                    self.timeLabel.textColor = R.Colors.darkBg
-//                    self.locationLabel.textColor = R.Colors.darkBg
-//                    self.weatherLabel.textColor = R.Colors.darkBg
-//                    self.searchButton.tintColor = R.Colors.darkBg
-//                }
                 
                 self.changeTheme()
                 self.hourlyCollection.updateTable()
@@ -276,7 +286,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         }
     }
     
-    //название - координаты
+    
     func getCoordinates() {
         self.geoCoder.geocodeAddressString(self.locationLabel.text ?? "Oslo") { (placemarks, error) in
             if error != nil {
@@ -291,7 +301,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
                 self.latitude = coordinates.latitude
                 self.longitude = coordinates.longitude
                 APIManager.shared.coordinates(latitude: self.latitude, longitude: self.longitude)
-                self.settings()
+                self.dataSetup()
             } else {
                 print("ERROR")
             }
@@ -313,8 +323,6 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         }
     }
     
-    
-    
     func getCity(location: CLLocation) {
         CLGeocoder().reverseGeocodeLocation(location) { (placemarks, error) in
             if let error = error {
@@ -331,17 +339,44 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
     }
     
     
-    
     func searchTheCity() {
         searchButton.addTarget(self, action: #selector(searchButtonTapped), for: .touchUpInside)
-        
     }
     
     @objc
     func searchButtonTapped() {
         showSearchAlert(title: "City" , message: "Please enter the city")
     }
+   
+    //MARK: - AnimatedCollection
     
+    private func setupCollectionView() {
+        
+        scrollHeightConstraint = scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: maxConstraintConstant)
+        
+        degreesHeightConstraint = degrees.heightAnchor.constraint(equalToConstant: maxConstraintConstant)
+        
+        NSLayoutConstraint.activate([
+            scrollHeightConstraint!,
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            degreesHeightConstraint!,
+            degrees.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 16),
+            degrees.topAnchor.constraint(equalTo: locationLabel.bottomAnchor, constant: 24),
+            degrees.widthAnchor.constraint(equalTo: degrees.heightAnchor),
+//            degrees.heightAnchor.constraint(equalToConstant: 200),
+//            degrees.widthAnchor.constraint(equalToConstant: 400),
+        ])
+        
+        
+        
+        
+    }
+    
+    
+    //MARK: - Constraints
     func constraints() {
         hourlyCollection.translatesAutoresizingMaskIntoConstraints = false
         dailyCollection.translatesAutoresizingMaskIntoConstraints = false
@@ -349,6 +384,9 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
         print("Const")
         
         NSLayoutConstraint.activate([
+            
+            titleDegrees.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            titleDegrees.topAnchor.constraint(equalTo: locationLabel.bottomAnchor),
             
             backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -366,12 +404,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-            contentView.heightAnchor.constraint(equalToConstant: 1128),
-            
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            contentView.heightAnchor.constraint(equalToConstant: 900),//1128
             
             middleView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: -50),
             middleView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
@@ -394,7 +427,6 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
             dailyCollection.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 8),
             dailyCollection.heightAnchor.constraint(equalToConstant: 350),
             
-            //headerLabel.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
             headerLabel.leadingAnchor.constraint(equalTo: middleView.leadingAnchor, constant: 24),
             headerLabel.topAnchor.constraint(equalTo: hourlyCollection.bottomAnchor, constant: 16),
             
@@ -408,18 +440,13 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate {
 //            speedLabel.leadingAnchor.constraint(equalTo: windImageView.trailingAnchor, constant: 8),
 //            speedLabel.centerYAnchor.constraint(equalTo: windImageView.centerYAnchor),
             
-            timeLabel.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
-            timeLabel.topAnchor.constraint(equalTo: middleView.topAnchor, constant: 56),
+            timeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            timeLabel.topAnchor.constraint(equalTo: locationLabel.bottomAnchor),
             
             imageView.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
-            imageView.topAnchor.constraint(equalTo: degrees.bottomAnchor, constant: -24),
+            imageView.topAnchor.constraint(equalTo: middleView.topAnchor, constant: 64),
             imageView.heightAnchor.constraint(equalToConstant: 220),
             imageView.widthAnchor.constraint(equalToConstant: 220),
-            
-            degrees.centerXAnchor.constraint(equalTo: middleView.centerXAnchor, constant: 8),
-            degrees.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 16),
-            degrees.heightAnchor.constraint(equalToConstant: 200),
-            degrees.widthAnchor.constraint(equalToConstant: 400),
             
             weatherLabel.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
             weatherLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 32),
@@ -460,6 +487,43 @@ extension WeatherController {
         
     }
     
+    func locationManager( _ manager: CLLocationManager, didFailWithError error: Error) {
+      print("didFailWithError \(error.localizedDescription)")
+    }
+    
+    func locationManager( _ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let newLocation = locations.last!
+        //print("didUpdateLocations \(newLocation)")
+        location = newLocation
+//        print(location as Any)
+        updateLabels()
+      
+        
+    }
+    
+    func updateLabels() {
+        if let location = location {
+            userLatitude = String( format: "%.8f", location.coordinate.latitude)
+            userLongitude = String( format: "%.8f", location.coordinate.longitude)
+            let userLocation = CLLocation(latitude: Double(userLatitude) ?? 55.7586642, longitude: Double(userLongitude) ?? 37.6192919)
+            getCity(location: userLocation)
+            
+        
+        } else {
+            userLatitude = ""
+            userLongitude = ""
+        }
+    }
+    
+    func showLocationServicesDeniedAlert() {
+        let alert = UIAlertController(title: "Location Services Disabled", message: "Please enable location services for this app in Settings.", preferredStyle: .alert)
+
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okAction)
+
+    present(alert, animated: true, completion: nil)
+    }
+    
     func changeTheme() {
         if traitCollection.userInterfaceStyle == .dark {
             searchButton.tintColor = R.Colors.background
@@ -489,43 +553,51 @@ extension WeatherController {
         }
     }
     
-    func locationManager( _ manager: CLLocationManager, didFailWithError error: Error) {
-      print("didFailWithError \(error.localizedDescription)")
-    }
     
-    func locationManager( _ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let newLocation = locations.last!
-        //print("didUpdateLocations \(newLocation)")
-        location = newLocation
-//        print(location as Any)
-        updateLabels()
-      
+}
+
+extension WeatherController {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         
-    }
-    
-    func updateLabels() {
-        if let location = location {
-            userLatitude = String( format: "%.8f", location.coordinate.latitude)
-            userLongitude = String( format: "%.8f", location.coordinate.longitude)
-            let userLocation = CLLocation(latitude: Double(userLatitude) ?? 55.7586642, longitude: Double(userLongitude) ?? 37.6192919)
-            getCity(location: userLocation)
-            
+        //Узнаем направление движения скролла
+        let currentContentOffsetY = scrollView.contentOffset.y
+       // print("CurrentContent - \(currentContentOffsetY)")
+        let scrollDiff = currentContentOffsetY - previousContentOffsetY
+        let bounceBorderContentOffsetY = -scrollView.contentInset.top
         
-        } else {
-            userLatitude = ""
-            userLongitude = ""
+        let contentMovesUp = scrollDiff > 0 && currentContentOffsetY > bounceBorderContentOffsetY
+        let contentMovesDown = scrollDiff < 0 && currentContentOffsetY < bounceBorderContentOffsetY
+        
+        let currentConstraintConstant = scrollHeightConstraint!.constant
+        var newConstraintConstant = currentConstraintConstant
+        
+        if contentMovesUp {
+            // Уменьшаем константу констрэйнта
+            newConstraintConstant = max(currentConstraintConstant - scrollDiff, minConstraintConstant)
+        } else if contentMovesDown {
+            // Увеличиваем константу констрэйнта
+            newConstraintConstant = min(currentConstraintConstant - scrollDiff, maxConstraintConstant)
         }
-       
         
-    }
-    
-    func showLocationServicesDeniedAlert() {
-        let alert = UIAlertController(title: "Location Services Disabled", message: "Please enable location services for this app in Settings.", preferredStyle: .alert)
-
-        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-        alert.addAction(okAction)
-
-    present(alert, animated: true, completion: nil)
+        if newConstraintConstant != currentConstraintConstant {
+            scrollHeightConstraint?.constant = newConstraintConstant
+            scrollView.contentOffset.y = previousContentOffsetY
+           
+            //print("1")
+        }
+        
+        let animationCompletionPercent = (maxConstraintConstant - currentConstraintConstant) / (maxConstraintConstant - minConstraintConstant)
+        
+        if newConstraintConstant != degreesHeightConstraint!.constant {
+            degreesHeightConstraint?.constant = currentConstraintConstant
+        }
+        
+        print(animationCompletionPercent)
+        
+        degrees.alpha = 1 - animationCompletionPercent
+        timeLabel.alpha = 1 - animationCompletionPercent*2
+        titleDegrees.alpha = animationCompletionPercent
+  
     }
 }
 
