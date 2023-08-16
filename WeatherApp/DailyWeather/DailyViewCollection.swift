@@ -41,11 +41,9 @@ final class DailyViewCollection: UIView, UICollectionViewDataSource, UICollectio
         blurEffectView = UIVisualEffectView(effect: blurEffect)
 
 
-        APIManager.shared.getweather { [weak self] weatherData in
+        APIWeatherManager.shared.getweather { [weak self] weatherData in
 
             DispatchQueue.main.sync {
-
-                print("Day \(weatherData.daily.weathercode)")
                 
                 let week:[String] = weatherData.daily.time
                 let weekDays:[String] = self!.dateFormatter(week: week)
@@ -112,7 +110,7 @@ final class DailyViewCollection: UIView, UICollectionViewDataSource, UICollectio
         collectionView?.removeFromSuperview()
         blurEffectView.removeFromSuperview()
         collectionApperance()
-        print("Update")
+        print("TableUpdate")
     }
 
 }

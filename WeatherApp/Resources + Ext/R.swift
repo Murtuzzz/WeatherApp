@@ -12,6 +12,10 @@ enum R {
         
         static var background = UIColor(hexString: "#e2eaf2")
         static var darkBg = UIColor(hexString: "#2f3543")
+        static var blue = UIColor(hexString: "#8dcfec")
+        static var lightBlue = UIColor(hexString: "#b8e2f4")
+        
+        
         
     }
     

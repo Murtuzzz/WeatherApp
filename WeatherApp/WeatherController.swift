@@ -8,6 +8,7 @@
 import UIKit
 import MapKit
 import CoreLocation
+import WidgetKit
 
 
 final class WeatherController: UIViewController, CLLocationManagerDelegate, UIScrollViewDelegate {
@@ -18,7 +19,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
     
     private var degreesHeightConstraint: NSLayoutConstraint?
     private var scrollHeightConstraint: NSLayoutConstraint?
-    
+    private var tableCityName: String? = nil
     
     private var location: CLLocation?
     private var longitude = 0.0
@@ -100,7 +101,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
         return view
     }()
     
-    private let locationLabel: UILabel = {
+    let locationLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = R.Fonts.avenirBook(with: 22)
@@ -195,15 +196,12 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
     
     private var userLocation: CLLocation?
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        getUserLocation()
-  
-    }
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        getUserLocation()
         view.addSubview(backgroundImage)
         view.addSubview(scrollView)
         view.addSubview(degrees)
@@ -235,13 +233,11 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
     }
     
     func dataSetup() {
-        APIManager.shared.getweather { [weak self] weatherData in
+        APIWeatherManager.shared.getweather { [weak self] weatherData in
             DispatchQueue.main.sync {
                 guard let self else {return}
                 
-//let rainWeatherCodes: [Int] = [61,63,65,81,82,95,96,99]
-                
-                
+                print("DataSetup")
                 self.removeAllArrangedSubviews(from: self.stackViewV)
                 self.degrees.text = "\(Int(weatherData.currentWeather.temperature))˚"
                 self.titleDegrees.text = "\(Int(weatherData.currentWeather.temperature))˚"
@@ -253,6 +249,13 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
                 self.changeTheme()
                 self.hourlyCollection.updateTable()
                 self.dailyCollection.updateTable()
+                
+                let imageData = self.imageView.image?.pngData()
+                let mySharedDefaults = UserDefaults(suiteName: "group.com.MK.WeatherApp")
+                mySharedDefaults?.setValue(self.locationLabel.text, forKey: "cityName")
+                mySharedDefaults?.setValue(self.degrees.text, forKey: "cityTemp")
+                mySharedDefaults?.set(imageData, forKey: "weatherImage")
+                WidgetCenter.shared.reloadTimelines(ofKind: "com.yourapp.examplewidget")
                 //self.weatherImageAnimation()
             }
         }
@@ -287,7 +290,8 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
     }
     
     
-    func getCoordinates() {
+    public func getCoordinates() {
+        print("GetCoordinates")
         self.geoCoder.geocodeAddressString(self.locationLabel.text ?? "Oslo") { (placemarks, error) in
             if error != nil {
                 self.showAlert(title: "Oops", message: "This city doesn't exist")
@@ -300,7 +304,8 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
                 print("Координаты города \(self.locationLabel.text ?? "") - Широта: \(coordinates.latitude), Долгота: \(coordinates.longitude)")
                 self.latitude = coordinates.latitude
                 self.longitude = coordinates.longitude
-                APIManager.shared.coordinates(latitude: self.latitude, longitude: self.longitude)
+                APIWeatherManager.shared.coordinates(latitude: self.latitude, longitude: self.longitude)
+                
                 self.dataSetup()
             } else {
                 print("ERROR")
@@ -311,6 +316,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
     //MARK: - User location
     
     func getUserLocation() {
+        print("GetUserLocation")
         self.locationManager.delegate = self
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         self.locationManager.startUpdatingLocation()
@@ -331,22 +337,36 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
             }
             if let placemark = placemarks?.first {
                 // Получение информации о местоположении
-                //let address = "\(placemark.postalCode ?? ""), \(placemark.locality ?? ""), \(placemark.country ?? "")"
+                let address = "\(placemark.postalCode ?? ""), \(placemark.locality ?? ""), \(placemark.country ?? "")"
+                print("GET-CITY")
+                print(address)
                 self.locationLabel.text = placemark.locality
                 self.getCoordinates()
             }
         }
     }
     
-    
-    func searchTheCity() {
-        searchButton.addTarget(self, action: #selector(searchButtonTapped), for: .touchUpInside)
-    }
-    
     @objc
     func searchButtonTapped() {
-        showSearchAlert(title: "City" , message: "Please enter the city")
+        //showSearchAlert(title: "City" , message: "Please enter the city")
+        
+       // let vc = UINavigationController(rootViewController:SearchController())
+        let vc = SearchTableView {city in
+            self.locationLabel.text = city
+            self.getCoordinates()
+        }
+        
+        present(vc, animated: true)
+        
     }
+    
+    func setLocationLabel(city: String) {
+        print("SetLocationLabel")
+        locationLabel.text = city
+        getCoordinates()
+        
+    }
+
    
     //MARK: - AnimatedCollection
     
@@ -369,10 +389,6 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
 //            degrees.heightAnchor.constraint(equalToConstant: 200),
 //            degrees.widthAnchor.constraint(equalToConstant: 400),
         ])
-        
-        
-        
-        
     }
     
     
@@ -380,8 +396,6 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
     func constraints() {
         hourlyCollection.translatesAutoresizingMaskIntoConstraints = false
         dailyCollection.translatesAutoresizingMaskIntoConstraints = false
-        
-        print("Const")
         
         NSLayoutConstraint.activate([
             
@@ -404,7 +418,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-            contentView.heightAnchor.constraint(equalToConstant: 900),//1128
+            contentView.heightAnchor.constraint(equalToConstant: 832),//1128
             
             middleView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: -50),
             middleView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
@@ -445,17 +459,13 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
             
             imageView.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
             imageView.topAnchor.constraint(equalTo: middleView.topAnchor, constant: 64),
-            imageView.heightAnchor.constraint(equalToConstant: 220),
-            imageView.widthAnchor.constraint(equalToConstant: 220),
+            imageView.heightAnchor.constraint(equalToConstant: 200),
+            imageView.widthAnchor.constraint(equalToConstant: 200),
             
             weatherLabel.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
             weatherLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 32),
             weatherLabel.heightAnchor.constraint(equalToConstant: 50),
             weatherLabel.widthAnchor.constraint(equalToConstant: 150),
-            //            menuButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 128),
-            //            menuButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
-            
-            
         ])
         
     }
@@ -466,7 +476,7 @@ extension WeatherController {
     func showSearchAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addTextField { tf in
-            let cities = ["San Francisco", "Vladikavkaz", "Boston", "Moscow", "Viena", "Stambul", "San Jose", ""]
+            let cities = ["San Francisco", "Vladikavkaz", "Boston", "Moscow", "Viena", "Stambul", "San Jose"]
             tf.placeholder = cities.randomElement()
         }
         
@@ -493,9 +503,7 @@ extension WeatherController {
     
     func locationManager( _ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let newLocation = locations.last!
-        //print("didUpdateLocations \(newLocation)")
         location = newLocation
-//        print(location as Any)
         updateLabels()
       
         
@@ -583,7 +591,6 @@ extension WeatherController {
             scrollHeightConstraint?.constant = newConstraintConstant
             scrollView.contentOffset.y = previousContentOffsetY
            
-            //print("1")
         }
         
         let animationCompletionPercent = (maxConstraintConstant - currentConstraintConstant) / (maxConstraintConstant - minConstraintConstant)
@@ -592,9 +599,7 @@ extension WeatherController {
             degreesHeightConstraint?.constant = currentConstraintConstant
         }
         
-        print(animationCompletionPercent)
-        
-        degrees.alpha = 1 - animationCompletionPercent
+        degrees.alpha = 1 - animationCompletionPercent*3
         timeLabel.alpha = 1 - animationCompletionPercent*2
         titleDegrees.alpha = animationCompletionPercent
   

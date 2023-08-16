@@ -45,23 +45,13 @@ final class HourlyViewCollection: UIView, UICollectionViewDataSource, UICollecti
         blurEffectView = UIVisualEffectView(effect: blurEffect)
 
         
-        APIManager.shared.getweather { [weak self] weatherData in
+        APIWeatherManager.shared.getweather { [weak self] weatherData in
             
             DispatchQueue.main.sync {
                 
-//                print(weatherData.daily.time)
-//                print(weatherData.hourly.temperature2M)
-//                print(weatherData.hourly.time)
-//                print(weatherData.hourly.weathercode)
-                
                 let weekHourlyTemp = self?.getWeekHourlyTemp(weatherData.hourly.temperature2M)
                 let wc = weatherData.hourly.weathercode
-               
-                
-                print(weatherData.daily.temperature2MMax)
-//                print(self!.dateFormatter(day: weatherData.daily.time[0]))
-                
-                
+                                
                 self?.dataSource = [
                     .init(time: "00", weatherIcon: weatherImages["\(wc[0])"] ?? "", temp: "\(Int(weekHourlyTemp![0][0] ))˚"),
                     .init(time: "01", weatherIcon: weatherImages["\(wc[1])"] ?? "", temp: "\(Int(weekHourlyTemp?[0][1] ?? 00))˚"),
@@ -137,7 +127,7 @@ final class HourlyViewCollection: UIView, UICollectionViewDataSource, UICollecti
         collectionView?.removeFromSuperview()
         blurEffectView.removeFromSuperview()
         collectionApperance()
-        print("Update")
+        print("TableHourlyUpdate")
     }
     
 }
