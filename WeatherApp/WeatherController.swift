@@ -105,7 +105,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = R.Fonts.avenirBook(with: 22)
-        label.text = "Boston"
+        label.text = "Москва"
         label.textColor = R.Colors.darkBg
         label.adjustsFontForContentSizeCategory = true
         label.adjustsFontSizeToFitWidth = true
@@ -116,7 +116,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
     private let timeLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Now"
+        label.text = "Сейчас"
         label.font = R.Fonts.avenirBook(with: 16)
         label.textColor = R.Colors.darkBg
         label.textAlignment = .center
@@ -178,7 +178,7 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
     private let headerLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "7-Day forecast"
+        label.text = "7-Дневный прогноз"
         label.font = R.Fonts.avenirBook(with: 14)
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -244,9 +244,9 @@ final class WeatherController: UIViewController, CLLocationManagerDelegate, UISc
                 self.speedLabel.text = "\(weatherData.currentWeather.windspeed)m/s"
                 self.weatherLabel.text = weatherCodes["\(weatherData.currentWeather.weathercode)"]
                 self.imageView.image = UIImage(named: weatherImages["\(weatherData.currentWeather.weathercode)"]!)
-                self.backgroundImage.image = UIImage(named: backgroundImg["\(weatherData.currentWeather.weathercode)"]!)
+//                self.backgroundImage.image = UIImage(named: backgroundImg["\(weatherData.currentWeather.weathercode)"]!)
                 
-                self.changeTheme()
+                //self.changeTheme()
                 self.hourlyCollection.updateTable()
                 self.dailyCollection.updateTable()
                 
@@ -544,7 +544,7 @@ extension WeatherController {
             windImageView.tintColor = R.Colors.background
             windLabel.textColor = R.Colors.background
             headerLabel.textColor = R.Colors.background
-            //view.backgroundColor = R.Colors.darkBg
+            titleDegrees.textColor = R.Colors.background
             backgroundImage.image = UIImage(named:"rainyBg")
         } else {
             searchButton.tintColor = R.Colors.darkBg
@@ -556,11 +556,10 @@ extension WeatherController {
             weatherLabel.textColor = R.Colors.darkBg
             windImageView.tintColor = R.Colors.darkBg
             headerLabel.textColor = R.Colors.darkBg
-            //windLabel.textColor = R.Colors.darkBg
+            titleDegrees.textColor = R.Colors.background
             backgroundImage.image = UIImage(named:"gradientBG")
         }
     }
-    
     
 }
 

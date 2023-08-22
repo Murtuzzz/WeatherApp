@@ -37,6 +37,7 @@ final class HourlyViewCell: UICollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
+        label.textColor = R.Colors.darkBg
         label.font = R.Fonts.avenirBook(with: 16)
         return label
     }()

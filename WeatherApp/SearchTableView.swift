@@ -54,7 +54,7 @@ final class SearchTableView: UIViewController, UITableViewDelegate, UITableViewD
     }()
     
     private var dataSource: [CityItems] = []
-    private var filteredDataSource: [CityItems] = []
+    private var filteredDataSource: [CityItems] = [.init(cityName: "Москва"),.init(cityName: "Санкт-Петербург"),.init(cityName: "Казань")]
     
     init(getCityName: @escaping (String) -> ()) {
         self.getCityName = getCityName
@@ -179,6 +179,7 @@ extension SearchTableView {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         // Сбросьте результаты поиска при нажатии на кнопку Отмена
         filterContentForSearchText("")
+        
     }
     
     func filterContentForSearchText(_ searchText: String) {
